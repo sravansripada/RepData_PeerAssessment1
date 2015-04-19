@@ -5,8 +5,8 @@ title: "Reproducible Research Assignment I"
 **Loading and preprocessing the data**
 ```{r}
 #Read Data
-setwd("C:/Users/Sravan/OneDrive/Git/RepData_PeerAssessment1/Work")
-unzip("activity.zip")
+setwd("C:/Users/Sravan/OneDrive/Data Science Masters/Coursera/Reproducible Research/Week II/Assignment/repdata-data-activity")
+#unzip("activity.zip")
 data<-read.csv("activity.csv")
 ```
 
@@ -51,8 +51,11 @@ Total number of missing values in the data are `r mv`
 
 **Imputing missing values**
 
-```{r}
+```{r echo=FALSE,message=FALSE,warning=FALSE}
 library("dplyr")
+```
+
+```{r}
 # create another dataset to impute missing values #
 new_activity <- data
 
@@ -84,22 +87,24 @@ Mean is `r mean1` and median is `r median2`. The values do not change much. Ther
 is no impact of treating the missing values on mean and median
 
 **Are there differences in activity patterns between weekdays and weekends?**
-```{r}
+```{r warning=FALSE,echo=FALSE,message=FALSE}
 # treated data is new_activity
 library(sqldf)
+```
+```{r}
 weekday<-weekdays(as.Date(new_activity$date))
 new_activity1<-cbind(new_activity,weekday)
 new_activity2<-sqldf("select *,(case when weekday in ('Saturday','Sunday') then 1 else 0 end) as weekgflag from new_activity1")
 ````
 
-Plot of the ts data
+```{r message=FALSE,echo=FALSE,results='hide',warning=FALSE}
+#Convert date to POSIxt object
+library(lattice)
+````
 ```{r}
-swd<-new_activity[which(new_activity2$weekgflag==0),]
-swe<-new_activity[which(new_activity2$weekgflag==1),]
-agg3<-aggregate(swd$steps,by=list(swd$interval),FUN=mean)
-agg4<-aggregate(swe$steps,by=list(swe$interval),FUN=mean)
-plot(agg3$Group.1,agg3$x,type = "l",ylab = "Avg no. of steps",xlab="Interval",main="Average Daily Pattern Weekday")
-plot(agg4$Group.1,agg4$x,type = "l",ylab = "Avg no. of steps",xlab="Interval",main="Average Daily Pattern Weekend")
+new_activity2$weekgflag<-factor(new_activity2$weekgflag, labels=c("weekday","weekend"))
+agg5<-aggregate(new_activity2$steps, by=list(new_activity2$weekgflag,new_activity2$interval),FUN=mean)
+xyplot(agg5$x~agg5$Group.2|agg5$Group.1 ,data = new_activity2,type = "l", layout=c(1,2), xlab = "Avg no. Steps",ylab = "Interval")
 ```
 
 
